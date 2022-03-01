@@ -1,9 +1,5 @@
 # Ted-Talks
 
-    Analisis Exploratorio de Datos sobre "las ideas que vale la pena difundir"
-
-### [Dataset en Kaggle](https://www.kaggle.com/ashishjangra27/ted-talks)
-
 [//]: <> (Diagrama?)
 ```mermaid
 stateDiagram-v2
@@ -12,5 +8,9 @@ stateDiagram-v2
     Motivated --> Productive
     Productive --> Losecontrol
     Losecontrol -->TedTalks 
-    Losecontrol --> [*]    
+    Losecontrol --> [*]   
 ```
+
+    Analisis Exploratorio de Datos sobre "las ideas que vale la pena difundir"
+
+### [Dataset en Kaggle](https://www.kaggle.com/ashishjangra27/ted-talks)
