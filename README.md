@@ -2,13 +2,12 @@
 
 [//]: <> (Diagrama?)
 ```mermaid
+%%{init: {'securityLevel': 'loose', 'theme':'base'}}%%
 stateDiagram-v2
-    [*] --> TedTalks
     TedTalks --> Motivated
     Motivated --> Productive
     Productive --> Losecontrol
     Losecontrol -->TedTalks 
-    Losecontrol --> [*]   
 ```
 
     Analisis Exploratorio de Datos sobre "las ideas que vale la pena difundir"
