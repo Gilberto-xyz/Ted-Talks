@@ -2,7 +2,7 @@
 
 [//]: <> (Diagrama?)
 ```mermaid
-%%{init: {'securityLevel': 'loose', 'theme':'base', 'darkMode': 'false'}}%%
+%%{init: {'securityLevel': 'loose', 'theme':'default'}}%%
 stateDiagram-v2
     TedTalks --> Motivated
     Motivated --> Productive
