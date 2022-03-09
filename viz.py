@@ -338,12 +338,11 @@ for i, v in enumerate(views):
 # Imprime el grafico en streamlit
 st.pyplot(fig)
 
-# # Top 10 TED Talks que tienen la mejor relación entre likes y visualizaciones
-# 
-# Graficado con :
-# - Matplotlib
+st.subheader('Top 10 TED Talks que tienen la mejor relación entre likes y visualizaciones')
+st.markdown('''
+En este gráfico se resalta la relación entre la parte orgánica (vistas) y  las interacciones (likes) para los títulos. Nos aproxima al compromiso por cierto público con los títulos
 
-# %%
+```python 
 # Variables para graficar
 # Nueva columna con la relacion de likes/views
 talks_df['like_view_ratio'] = (talks_df['likes']/talks_df['views'])*100
@@ -370,16 +369,26 @@ for i, v in enumerate(ratio.like_view_ratio):
     ax.text(v+step_value/5, i, v, color='gray')
 
 plt.show()
+```
+''')
+talks_df['like_view_ratio'] = (talks_df['likes']/talks_df['views'])*100
+ratio = talks_df[['title', 'like_view_ratio']].head(10).sort_values(by='like_view_ratio', ascending=False)
+ratio['like_view_ratio'] = ratio['like_view_ratio'].round(2)
+fig, ax = plt.subplots(figsize=(20,10))
+ax.barh(ratio.title, ratio.like_view_ratio)
+ax.set_title('Las 10 Charlas con mejor relación entre likes y visualizaciones', fontsize=15)
+ax.set_facecolor('white')
+step_value=ratio.like_view_ratio.max()/20
+for i, v in enumerate(ratio.like_view_ratio):
+    ax.text(v+step_value/5, i, v, color='gray')
+st.pyplot(fig)
 
-# %% [markdown]
-# # Charlas por año
-# 
-# Nos ayuda a obtener una "primera vista" general, o panorama de las charlas por año.
-# 
-# Graficado con:
-# - Matplotlib
+st.subheader('Charlas por año')
+st.markdown('''
+Nos ayuda a obtener una "primera vista", o panorama de las charlas por año.
 
-# %%
+codigo:
+```python 
 # Variable para graficar
 
 total = talks_df['year'].value_counts().sort_index(ascending=True)
@@ -407,10 +416,25 @@ ax.set_title('Numero de charlas por año de publicación', fontsize=15)
 plt.xticks(ticks=total.index, labels=total.index, rotation=45)
 
 plt.show()
+```
+''')
+total = talks_df['year'].value_counts().sort_index(ascending=True)
+fig, ax = plt.subplots(figsize=(30,10))
+ax.scatter(total.index, total.values, s=total.values, alpha=0.3)
+ax.plot(total.index, total.values)
+for i, txt in enumerate(total.values):
+    ax.annotate(txt, (total.index[i] + .4, total.values[i]),color='gray')
+ax.set_facecolor('white')
+ax.set_title('Numero de charlas por año de publicación', fontsize=15)
+plt.xticks(ticks=total.index, labels=total.index, rotation=45)
+# Imprime el grafico en streamlit
+st.pyplot(fig)
 
-# %%
-# Variable para graficar
+st.markdown('''
+Zoom - Charlas a partir del año 2000
 
+Codigo:
+```python 
 # Mostrar solo los años de publicación a partir de 2001
 total = total[total.index > 2000]
 
@@ -429,20 +453,32 @@ for i, txt in enumerate(total.values):
 # Fondo blanco
 ax.set_facecolor('white')
 # Titulo
-ax.set_title('Charlas por año de publicación: 2001 - 2022', fontsize=15)
+ax.set_title('Charlas por año de publicación: 2000 - 2022', fontsize=15)
 
 # Años de publicación en X
 plt.xticks(ticks=total.index, labels=total.index, rotation=45)
 
 plt.show()
+```
+''')
+total = total[total.index > 2000]
+fig, ax = plt.subplots(figsize=(30,10))
+ax.scatter(total.index, total.values, s=total.values, alpha=0.3)
+ax.plot(total.index, total.values)
+for i, txt in enumerate(total.values):
+    ax.annotate(txt, (total.index[i] + .4, total.values[i]),color='gray', ha = 'center', va='center')
+ax.set_facecolor('white')
+ax.set_title('Charlas por año de publicación: 2000 - 2022', fontsize=15)
+plt.xticks(ticks=total.index, labels=total.index, rotation=45)
+# Imprime el grafico en streamlit
+st.pyplot(fig)
 
-# %% [markdown]
-# # Los 10 autores con más charlas
-# 
-# Graficado con: 
-# - Matplotlib
+st.subheader('Los 10 autores con más charlas')
+st.markdown('''
+Como se dedujo en el proceso de exploración existen autores con más de una charla en el dataset. Aca se muestran el nombre de los autores con más charlas y el numero de charlas que ha publicado.
 
-# %%
+Codigo:
+```python
 # Variables para graficar
 speaker = talks_df.author.value_counts().head(10)
 
@@ -463,15 +499,25 @@ for i, v in enumerate(speaker):
     ax.text(v+step_value/5, i, v, color='gray')
 
 plt.show()
+```
+''')
+speaker = talks_df.author.value_counts().head(10)
+fig, ax = plt.subplots(figsize=(29,10))
+ax.barh(speaker.index, speaker.values)
+ax.set_title('Los 10 autores con más charlas', fontsize=15)
+ax.set_facecolor('white')
+step_value=speaker.max()/20
+for i, v in enumerate(speaker):
+    ax.text(v+step_value/5, i, v, color='gray')
+# Imprime el grafico en streamlit
+st.pyplot(fig)
 
+st.subheader('Autores más vistos')
+st.markdown('''
+En algunas ocasiones tener experiencia no asegura el éxito. Esto se comprueba con los siguientes autores que tienen charlas que atraen más al público.
 
-# %% [markdown]
-# # Los 10 Autores más populares por número de visitas
-# 
-# Gráficado con:
-# - Matplotlib
-
-# %%
+Codigo:
+```python
 # Variables para graficar
 authot_views = talks_df.groupby('author')['views'].mean().nlargest(10).sort_values(ascending=False)
 
@@ -495,24 +541,35 @@ for i, v in enumerate(authot_views):
     ax.text(v+step_value/5, i, formato_numeros(v, i), color='gray')
 
 plt.show()
+```
+''')
+authot_views = talks_df.groupby('author')['views'].mean().nlargest(10).sort_values(ascending=False)
+fig, ax = plt.subplots(figsize=(30,10))
+ax.barh(authot_views.index, authot_views.values)
+ax.set_title('Los 10 autores con más visualizaciones', fontsize=15)
+ax.set_facecolor('white')
+step_value=authot_views.max()/20
+ax.xaxis.set_major_formatter(formato_numeros)
+for i, v in enumerate(authot_views):
+    ax.text(v+step_value/5, i, formato_numeros(v, i), color='gray')
+# Imprime el grafico en streamlit
+st.pyplot(fig)
 
-# %% [markdown]
-# # Número de charlas en 2019
-# 
-# Graficado con:
-# - Matplotlib
+st.subheader('2019 - Charlas por mes')
+st.markdown('''
+Volviendo un poco atrás, en el gráfico de “charlas por año de publicación: 2000 - 2022”, se puede notar un récord. En 2019 se han publicado más charlas que en otros años. Aquí se muestran las charlas por mes
 
-# %%
+Codigo:
+```python
 # Datos del 2019
 talks_df_2019 = talks_df[talks_df['year'] == 2019]
-# Vairble para ordenar los meses
+# Variable para ordenar los meses
 order = ('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December')
 # Guardamos en una nueva columna la lista de meses en el orden correcto
 talks_df_2019['order'] = pd.Categorical(talks_df_2019['month'], categories=order, ordered=True)
 # Ordenamos por el orden de la lista y actualizamos el dataframe
 talks_df_2019.sort_values(by=['order'], inplace=True)
 
-# %%
 # Variable para graficar 
 mes2k19 = talks_df_2019.groupby('order')['title'].count()
 
@@ -533,60 +590,19 @@ for i, v in enumerate(mes2k19):
     ax.text(i, v+step_value/5, v, color='gray')
 
 plt.show()
-
-# %% [markdown]
-# # Visitas por Año
-# 
-# Graficado con: 
-# - Matplotlib
-
-# %%
-# Variables para graficar
-years_views = talks_df.groupby('year')['views'].sum()
-
-# Tamaño de la figura
+```
+''')
+talks_df_2019 = talks_df[talks_df['year'] == 2019]
+order = ('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December')
+talks_df_2019['order'] = pd.Categorical(talks_df_2019['month'], categories=order, ordered=True)
+talks_df_2019.sort_values(by=['order'], inplace=True)
+mes2k19 = talks_df_2019.groupby('order')['title'].count()
 fig, ax = plt.subplots(figsize=(30,15))
-
-# Linea de la grafica
-ax.bar(years_views.index, years_views.values)
-step_value=years_views.max()/20
-
-# Fondo blanco
+ax.bar(mes2k19.index, mes2k19.values)
+ax.set_title('2019 - Charlas por Mes', fontsize=15)
 ax.set_facecolor('white')
-# Titulo
-ax.set_title('Visualizaciones por año', fontsize=15)
-
-# Años de publicación en X
-plt.xticks(ticks=years_views.index, labels=years_views.index, rotation=45)
-
-# Etiquetas en X, Y para valores en el grafico con formato numeros y step_value para que quede alto
-for i, v in enumerate(years_views):
-    ax.annotate(formato_numeros(v, i), (years_views.index[i], years_views.values[i]),color='gray', ha='center', va='bottom', fontsize=9)
-
-plt.show()
-
-# %%
-
-# Mostrar desde el 2001 hasta la actualidad
-years_views = years_views[years_views.index >= 2001]
-
-# Tamaño de la figura
-fig, ax = plt.subplots(figsize=(30,15))
-
-# Linea de la grafica
-ax.bar(years_views.index, years_views.values)
-step_value=years_views.max()/20
-
-# Fondo blanco
-ax.set_facecolor('white')
-# Titulo
-ax.set_title('Visualizaciones por año', fontsize=15)
-
-# Años de publicación en X
-plt.xticks(ticks=years_views.index, labels=years_views.index, rotation=45)
-
-# Etiquetas en X, Y para valores en el grafico con formato numeros y step_value para que quede alto
-for i, v in enumerate(years_views):
-    ax.annotate(formato_numeros(v, i), (years_views.index[i], years_views.values[i]),color='gray', ha='center', va='bottom', fontsize=9)
-
-plt.show()
+step_value=mes2k19.max()/20
+for i, v in enumerate(mes2k19):
+    ax.text(i, v+step_value/5, v, color='gray')
+# Imprime el grafico en streamlit
+st.pyplot(fig)
