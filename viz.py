@@ -1,11 +1,12 @@
 # Streamlit webapp
+from importlib import resources
 import pandas as pd
 import numpy as np
 from wordcloud import WordCloud, STOPWORDS
 import matplotlib.pyplot as plt
 import streamlit as st
 
-
+######  
 st.title('Ted Talks: Ideas que merecen ser difundidas')
 st.write('''
 En la vida de todos existe un momento clave en el que entendemos lo que está sucediendo, desde darte cuenta de que también le gustas a esa persona especial, descubrir tu salsa favorita o entender cómo es que funciona while, do while.
@@ -16,128 +17,184 @@ Es aquí el porqué elegí este tema. Siempre vamos a necesitar unos de otros, p
 Gran parte de las charlas disponibles en TED se enfocan en esto, dado que es un gran problema y pasa en todos los sectores.
 
 La curiosidad me llevó a analizar este Dataset, pero en parte fue por lo mucho que frecuentaba algunas charlas que me han ayudado a no rendirme con mi sueño de ser Científico de Datos 
-
-
-![do it](https://i.ytimg.com/vi/3njZSDjW7Q4/hqdefault.jpg)
-
+''')
+st.image('https://i.redd.it/apqur6fk9t761.jpg', width=700)
+st.write('''
 _TED es una organización sin ánimo de lucro dedicada a la difusión de ideas, normalmente en forma de charlas breves e impactantes. 
 TED comenzó en 1984 como una conferencia en la que convergían la Tecnología, el Entretenimiento y el Diseño, y en la actualidad 
 abarca casi todos los temas desde la ciencia hasta los negocios y los problemas globales en más de 110 idiomas._ 
 ''')
-
-st.header('Sobre el dataset')
+# Info dataset
+st.subheader('Sobre el dataset')
 st.markdown('''
+[Dataset en Kaggle](https://www.kaggle.com/ashishjangra27/ted-talks)
+
 El dataset está extraído directamente de la página oficial de [Ted Talks](https://www.ted.com/)
 por lo que la información es diferente la del canal oficial de [YouTube](https://www.youtube.com/user/TEDxTalks)
 
+![ted](https://cdn.iconscout.com/icon/free/png-256/ted-5-282539.png) 
+![youtube](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Logo_of_YouTube_%282015-2017%29.svg/502px-Logo_of_YouTube_%282015-2017%29.svg.png)
+
 - Sería interesante también poder explorar datos extraídos de Youtube para ver la brecha de información de la página oficial a la de YouTube.
 
-[Dataset en Kaggle](https://www.kaggle.com/ashishjangra27/ted-talks)
+> **Nota:**
+> Los datos y el código fuente de esta aplicacion web se encuentran en el respositorio de GitHub 
+> [https://github.com/GilbertoNavaMarcos/Ted-Talks](https://github.com/GilbertoNavaMarcos/Ted-Talks)
+
 
 ''')
 
+##### EDA
 st.header('EDA - Análisis exploratorio de datos')
+st.subheader('Cargando el dataset')
+st.markdown('''
+Los datos originales se encuentran en un archivo CSV ubicados en `raw_data/ted_talks.csv`
 
-# Cargamos el dataset y mostramos los primeros 10 registros
+Hacemos uso de los datos mediante la librería Pandas, con las líneas de código:
+
+```python
+import pandas as pd
 
 talks_df = pd.read_csv('raw_data/ted_talks.csv')
-talks_df.head(10)
-# talks_df.tail(10)
+```
+Mostramos los primeros registros del dataset
+```python
+talks_df.head()
+```
+''')
+# Load data
+talks_df = pd.read_csv('raw_data/ted_talks.csv')
+# Mostrar los primeros registros
+st.dataframe(talks_df.head())
 
-# %% [markdown]
-# Este dataset contiene registros hasta 2022.
+st.markdown('''
+Imprimimos el resumen del Dataframe con la función `.info()`
 
-# %%
+```python
 talks_df.info()
+```
+''')
+import io
+buffer = io.StringIO()
+talks_df.info(buf=buffer)
+s = buffer.getvalue()
+st.text(s)
 
-# %% [markdown]
-# Existen 5440 pero tenemos un dato faltante en la columna de Autores.
+st.markdown('''
+### Autor Faltante
 
-# %%
-# Mostramos el registro del autor que falta
+> Existen 5440 valores en cada columna pero tenemos un dato faltante en Autores.
+
+Mostramos el registro del autor que falta
+```python
 talks_df[talks_df['author'].isnull()]
+```
+''')
+st.dataframe(talks_df[talks_df['author'].isnull()])
 
-# %% [markdown]
-# Esta charla es un resumen, el cual no contiene un autor y se eliminara para la integridad del dataset.
-# 
-# (Te invito a ver el resumen, es interesante ver como algunas tecnologías evolucionaron rápidamente, pero también algunos problemas se mantuvieron a pesar de los años)
-# 
+st.markdown('''
+Esta charla es un resumen, el cual no contiene un autor y se eliminara para la integridad del dataset
 
-# %%
+(Te invito a ver el resumen, es interesante ver como algunas tecnologías evolucionaron rápidamente, pero también algunos problemas se mantuvieron a pesar de los años)
+
+[Year in ideas 2015](https://ted.com/talks/year_in_ideas_2015)
+
+Para excluir esta charla, invertimos la condición de `author` en `isnull()` con `~` y lo guardamos en un nuevo Dataframe
+
+```python
+talks_clean = talks_df[~talks_df['author'].isnull()]
+```
+''')
 # Dataframe que excluye el registro de autor faltante
 talks_clean = talks_df[~talks_df['author'].isnull()]
 
-# %%
-talks_clean.info()
-
-# %% [markdown]
-# Mostramos los datos únicos de cada columna dentro del dataset.
-
-# %%
+st.markdown('''
+Mostramos los datos únicos de cada columna dentro del dataset
+```python
 for columna in talks_clean.columns:
     print(f'Valores unicos en la columna {columna}: {talks_clean[columna].nunique()}')
+```
+Valores unicos en la columna title: 5439
 
-# %% [markdown]
-# - Los Valores únicos en la columna author son: 4,443. Lo que indica que existen autores con más de una charla en el dataset.
-# 
-# - Los Valores únicos en la columna title son: 5,439. (Es el número total de registros con los que estamos trabajando)
-# 
+Valores unicos en la columna author: 4443
+> Existen autores con más de una charla en el dataset!
 
-# %%
-# Restamos el numero total de registros y el numero de autores unicos para obtener el numero de autores faltantes
-talks_clean['author'].count() - talks_clean['author'].nunique() 
+Valores unicos en la columna date: 200
 
-# %%
-# Mostrar las celdas que contienen autores repetidos
-talks_clean[talks_clean['author'].duplicated()]
+Valores unicos en la columna views: 972
 
-# Contamos todos los registros que contienen autores repetidos
-# talks_clean[talks_clean['author'].duplicated()].count()
+Valores unicos en la columna likes: 752
 
-# %% [markdown]
-# La fecha contiene un formato poco habitual, por lo que se dividirá en mes y año.
+Valores unicos en la columna link: 5439
+''')
 
-# %%
+st.subheader('Formato de fecha')
+st.markdown('''
+La fecha contiene un formato poco habitual, por lo que separamos en mes y año.
+
+```python 
 talks_clean[['month', 'year']] = talks_clean['date'].str.split(' ', expand=True)
+```
+Borramos la columa `date` ya que no nos sirve más
 
-# %%
+```python
+talks_clean.drop('date', axis=1, inplace=True)
+```
+''')
+# Separar mes y año
+talks_clean[['month', 'year']] = talks_clean['date'].str.split(' ', expand=True)
 # Eliminar la columna de date
 talks_clean.drop(columns=['date'], inplace=True)
 
-# %%
-# Cual es la primer charla en los registros de Ted Talks?
+st.subheader('Primer acercamiento a los datos a graficar')
+st.markdown('''
+Numero de platicas por año. De mayor a menor
 
-# Ordenamos el dataset por fecha y mostramos el primer registro
-talks_clean.sort_values(by=['year'], ascending=True).head(1)
-
-# %%
-# Numero de platicas por año. De mayor a menor
+```python 
 talks_clean['year'].value_counts(sort=True)
+```
+''')
+st.dataframe(talks_clean['year'].value_counts(sort=True))
 
-# %%
-# Cuantos años hay en el dataset?
-talks_clean['year'].nunique()
-
-# %%
-# Top 10 ted talks con mas likes
-talks_clean.groupby('title')['likes'].sum().sort_values(ascending = False).head(10)
-
-
-# %%
-# Top 10 ted talks con mas vistas
+st.markdown(''' 
+Top 10 ted talks con mas vistas
+```python 
 talks_clean.groupby('title')['views'].sum().sort_values(ascending = False).head(10)
+```
+''')
+st.dataframe(talks_clean.groupby('title')['views'].sum().sort_values(ascending = False).head(10))
+st.markdown('''
+Exportamos el dataset a un archivo CSV
+```python
+talks_clean.to_csv('clean_data/ted_talks_clean.csv', index=False)
+```
+''')
 
+##### Data Viz
+st.header('Visualización de datos')
+st.subheader('Cargando el dataset limpio')
+st.markdown('''
+El archivo CSV limpio se encuentra ubicado en `clean_data/ted_talks_clean.csv`
 
+Hacemos uso de los datos mediante la librería Pandas, con las líneas de código:
 
+```python
+import pandas as pd
 
-
-
-
-# Data Viz
-###################################################################################################################
+talks_df = pd.read_csv('clean_data/ted_talks_clean.csv')
+```
+''')
 # Dataset
 talks_df = pd.read_csv('clean_data/ted_talks_clean.csv')
-talks_df.head()
+
+st.subheader('Nube de palabras')
+st.markdown('''
+Como primer acercamiento, se trata de plantear que es lo que nos viene a la mente cuando escuchamos Ted Talks. Se genera una nube de palabras con los títulos de las charlas. Cuanto más grande se muestra una palabra, más veces fue empleada.
+
+Codigo:
+```python
+from wordcloud import WordCloud, STOPWORDS
+import matplotlib.pyplot as plt
 
 coment_words = ''
 stopwords = set(STOPWORDS)
@@ -160,16 +217,16 @@ plt.figure(figsize = (20,20), facecolor = None)
 plt.imshow(wordcloud)
 plt.axis('off')
 plt.show()
+```
+''')
+st.image('https://raw.githubusercontent.com/GilbertoNavaMarcos/Ted-Talks/03956ee8a0c84ea8d4ac9b76687b09a22d928261/resources/ted_talks_wordcloud.svg', width=700)
 
-# %% [markdown]
-# # Top 10 Ted Talks por cantidad de likes
-# 
-# Los likes son una medida interna de la plataforma que permite valorar una charla si el usuario está registrado 
-# 
-# Graficado con:
-# - Matplotlib
+st.subheader('Las 10 Charlas con más likes')
+st.markdown('''
+Los likes son una medida interna de la plataforma que permite valorar una charla si el usuario está registrado
 
-# %%
+codigo:
+```python
 # variables para graficar
 titulo = talks_df.groupby('title')['likes'].sum().sort_values(ascending = False).head(10).index
 likes = talks_df.groupby('title')['likes'].sum().sort_values(ascending = False).head(10)
@@ -183,9 +240,6 @@ def formato_numeros(valor, index):
     else:
         formato = '{:1.0f} K'.format(valor * 0.001)
     return formato
-
-
-# %%
 # Estilo
 plt.style.use('ggplot')
 
@@ -211,21 +265,40 @@ for i, v in enumerate(likes):
     ax.text(v+step_value/5, i, formato_numeros(v, i), color='gray')
 
 plt.show()
+```
+''')
+titulo = talks_df.groupby('title')['likes'].sum().sort_values(ascending = False).head(10).index
+likes = talks_df.groupby('title')['likes'].sum().sort_values(ascending = False).head(10)
+def formato_numeros(valor, index):
+    if valor == 0:
+        formato = '{:1.1f} '.format(valor)
+    elif valor >= 1_000_000:
+        formato = '{:1.1f} M'.format(valor * 0.000_001)
+    else:
+        formato = '{:1.0f} K'.format(valor * 0.001)
+    return formato
+plt.style.use('ggplot')
+fig, ax = plt.subplots(figsize=(25,10))
+ax.barh(titulo, likes)
+step_value = likes.max()/20
+ax.xaxis.set_major_formatter(formato_numeros)
+ax.set_title('Las 10 Charlas con más likes', fontsize=15)
+ax.set_facecolor('white')
+for i, v in enumerate(likes):
+    ax.text(v+step_value/5, i, formato_numeros(v, i), color='gray')
+# Imprime el grafico en streamlit
+st.pyplot(fig)
 
+st.subheader('Las 10 Charlas con más visitas')
+st.markdown('''
+Las vistas son consideradas según la frecuencia del recurso, estas no requieren inscribirse y pueden incrementar gracias a un mismo usuario.
 
-# %% [markdown]
-# # Top 10 Ted Talks por visitas
-# Las vistas son consideradas según la frecuencia del recurso, estas no requieren inscribirse y pueden incrementar gracias a un mismo usuario
-# 
-# Graficado con:
-# - Matplotlib
-
-# %%
+Codigo:
+```python
 # Variables para graficar
 title = talks_df.groupby('title')['views'].sum().sort_values(ascending = False).head(10).index
 views = talks_df.groupby('title')['views'].sum().sort_values(ascending = False).head(10)
 
-# %%
 # Grafica
 plt.style.use('ggplot')
 
@@ -249,11 +322,22 @@ for i, v in enumerate(views):
     ax.text(v+step_value/5, i, formato_numeros(v, i), color='gray')
 
 plt.show()
+```
+''')
+title = talks_df.groupby('title')['views'].sum().sort_values(ascending = False).head(10).index
+views = talks_df.groupby('title')['views'].sum().sort_values(ascending = False).head(10)
+plt.style.use('ggplot')
+fig, ax = plt.subplots(figsize=(25,10))
+ax.barh(title, views)
+ax.xaxis.set_major_formatter(formato_numeros)
+ax.set_title('Las 10 Charlas con más visitas', fontsize=15)
+ax.set_facecolor('white')
+step_value=views.max()/20
+for i, v in enumerate(views):
+    ax.text(v+step_value/5, i, formato_numeros(v, i), color='gray')
+# Imprime el grafico en streamlit
+st.pyplot(fig)
 
-# %% [markdown]
-# 
-
-# %% [markdown]
 # # Top 10 TED Talks que tienen la mejor relación entre likes y visualizaciones
 # 
 # Graficado con :
