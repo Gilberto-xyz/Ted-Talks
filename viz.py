@@ -2,7 +2,7 @@
 from importlib import resources
 import pandas as pd
 import numpy as np
-from wordcloud import WordCloud, STOPWORDS
+# from wordcloud import WordCloud, STOPWORDS
 import matplotlib.pyplot as plt
 import streamlit as st
 
