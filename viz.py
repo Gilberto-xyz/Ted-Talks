@@ -1,8 +1,7 @@
 # Streamlit webapp
-# from importlib import resources
 import pandas as pd
 import numpy as np
-# from wordcloud import WordCloud, STOPWORDS
+from wordcloud import WordCloud, STOPWORDS
 import matplotlib.pyplot as plt
 import streamlit as st
 
@@ -219,6 +218,30 @@ plt.axis('off')
 plt.show()
 ```
 ''')
+from wordcloud import WordCloud, STOPWORDS
+import matplotlib.pyplot as plt
+
+coment_words = ''
+stopwords = set(STOPWORDS)
+
+for val in talks_df.title:
+    val = str(val)
+    tokens = val.split()
+    for i in range(len(tokens)):
+        tokens[i] = tokens[i].lower()
+    coment_words += ' '.join(tokens)+' '
+
+wordcloud = WordCloud(width = 2000, height = 1200,
+                background_color ='white',
+                stopwords = stopwords,
+                colormap='Set2',
+                max_words = 100,
+                min_font_size = 0).generate(coment_words)
+
+plt.figure(figsize = (20,20), facecolor = None)
+plt.imshow(wordcloud)
+plt.axis('off')
+# st.pyplot(plt.show())
 st.image('https://raw.githubusercontent.com/GilbertoNavaMarcos/Ted-Talks/03956ee8a0c84ea8d4ac9b76687b09a22d928261/resources/ted_talks_wordcloud.svg', width=700)
 
 st.subheader('Las 10 Charlas con más likes')
