@@ -14,4 +14,6 @@ stateDiagram-v2
 
 ### [Dataset en Kaggle](https://www.kaggle.com/ashishjangra27/ted-talks)
 
-### [Deploy en Streamlit](https://share.streamlit.io/gilbertonavamarcos/ted-talks/main/viz.py)
+### [Deploy en Streamlit (No disponible)](https://share.streamlit.io/gilbertonavamarcos/ted-talks/main/viz.py)
+
+### [Blog en Medium](https://medium.com/@gilberto.nava.marcos/ted-talks-ideas-que-merecen-ser-difundidas-e17f2a488dd2)
